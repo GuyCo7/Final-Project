@@ -6,6 +6,8 @@ double **get_similarity_matrix(double **X, int n);
 double euclidean_distance(double *point1, double *point2, int d);
 double **get_diagonal_degree_matrix(double **X, int n);
 double row_sum(double **A, int i, int n);
+double **diagonal_matrix_power(double **D, double p, int n);
+double **matrix_mul(double **A, double **B, int n);
 
 int main(int argc, char *argv[])
 {
@@ -23,6 +25,8 @@ int main(int argc, char *argv[])
     double **X;
     double **A;
     double **D;
+    double **inverse_root_D;
+    double **W;
 
     /* Allocate memory for vectors */
     X = (double **)malloc(n * sizeof(double *));
@@ -98,6 +102,46 @@ int main(int argc, char *argv[])
         for (j = 0; j < n; j++)
         {
             printf("%.4f", D[i][j]);
+            if (j < n - 1)
+            {
+                printf(",");
+            }
+            else
+            {
+                printf("\n");
+            }
+        }
+    }
+
+    inverse_root_D = diagonal_matrix_power(D, -(1 / 2), n);
+
+    /* print inverse_root_D: */
+    printf("inverse_root_D - \n");
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < n; j++)
+        {
+            printf("%.4f", inverse_root_D[i][j]);
+            if (j < n - 1)
+            {
+                printf(",");
+            }
+            else
+            {
+                printf("\n");
+            }
+        }
+    }
+
+    W = matrix_mul(matrix_mul(inverse_root_D, A, n), inverse_root_D, n);
+
+    /* print W: */
+    printf("W - \n");
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < n; j++)
+        {
+            printf("%.4f", W[i][j]);
             if (j < n - 1)
             {
                 printf(",");
@@ -209,11 +253,95 @@ double **get_diagonal_degree_matrix(double **A, int n)
     return D;
 }
 
-double row_sum(double **A, int i, int n) {
+double row_sum(double **A, int i, int n)
+{
     double sum = 0.0;
     int j;
-    for (j = 0; j < n; j++) {
+    for (j = 0; j < n; j++)
+    {
         sum += A[i][j];
     }
     return sum;
+}
+
+double **diagonal_matrix_power(double **D, double q, int n)
+{
+    int i, j;
+
+    /* Allocate memory for vectors */
+    double **inverse_root_D = (double **)malloc(n * sizeof(double *));
+    if (inverse_root_D == NULL)
+    {
+        printf("An Error Has Occurred\n");
+        return NULL;
+    }
+    for (i = 0; i < n; i++)
+    {
+        inverse_root_D[i] = (double *)malloc(n * sizeof(double));
+        if (inverse_root_D[i] == NULL)
+        {
+            printf("An Error Has Occurred\n");
+            for (j = 0; j < i; j++)
+            {
+                free(inverse_root_D[j]);
+            }
+            free(inverse_root_D);
+            return NULL;
+        }
+        for (j = 0; j < n; j++)
+        {
+            inverse_root_D[i][j] = 0;
+        }
+    }
+
+    for (i = 0; i < n; i++)
+    {
+        inverse_root_D[i][i] = 1 / (sqrt(D[i][i]));
+    }
+
+    return inverse_root_D;
+}
+
+double **matrix_mul(double **A, double **B, int n)
+{
+    int i, j;
+
+    // Allocate memory for the matrix
+    double **result = (double **)malloc(n * sizeof(double *));
+    if (result == NULL)
+    {
+        printf("Memory allocation failed.\n");
+        return NULL;
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        result[i] = (double *)malloc(n * sizeof(double));
+        if (result[i] == NULL)
+        {
+            printf("Memory allocation failed.\n");
+            // Free already allocated memory before exiting
+            for (int j = 0; j < i; j++)
+            {
+                free(result[j]);
+            }
+            free(result);
+            return NULL;
+        }
+    }
+
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < n; j++)
+        {
+            result[i][j] = 0;
+
+            for (int k = 0; k < n; k++)
+            {
+                result[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+
+    return result;
 }
