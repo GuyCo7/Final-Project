@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define MAX_ROWS 1000 // Maximum number of rows
+#define MAX_COLS 100  // Maximum number of columns
+
 double **get_similarity_matrix(double **X, int n);
 double euclidean_distance(double *point1, double *point2, int d);
 double **get_diagonal_degree_matrix(double **X, int n);
@@ -17,16 +20,56 @@ int main(int argc, char *argv[])
     int n = 5;
     int d = 3;
     double **X;
+    double data[MAX_ROWS][MAX_COLS];
+    int rows = 0;
+    int cols = 0;
     double **A;
     double **D;
     double **inverse_root_D;
     double **W;
+    double temp;
 
     /* goal can be sym|ddg|norm */
     char *goal = argv[1];
 
-    // char *file_name = argv[2];
-    // FILE *text_file = fopen(file_name, "r");
+    char *file_name = argv[2];
+    FILE *text_file = fopen(file_name, "r");
+    if (text_file == NULL)
+    {
+        perror("Error opening file");
+        return 1;
+    }
+
+    // Read each line of the file
+    char line[1000]; // Assuming each line is at most 1000 characters long
+    while (fgets(line, sizeof(line), text_file) != NULL)
+    {
+        // Parse the line to extract doubles
+        char *token = strtok(line, ",");
+        cols = 0; // Reset column count for the next row
+        while (token != NULL)
+        {
+            // Print the token for debugging
+            // Convert token to double and store in the array
+            data[rows][cols++] = atof(token);
+            token = strtok(NULL, ",");
+        }
+        rows++; // Move to the next row
+    }
+
+    // Close the file
+    fclose(text_file);
+
+    // Print the data for verification
+    printf("Data read from the file:\n");
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            printf("%.4f,", data[i][j]);
+        }
+        printf("\n");
+    }
 
     /* Allocate memory for vectors */
     X = (double **)malloc(n * sizeof(double *));
@@ -50,7 +93,9 @@ int main(int argc, char *argv[])
         }
         for (j = 0; j < d; j++)
         {
-            scanf("%lf,", &X[i][j]);
+            // scanf("%lf,", &X[i][j]);
+            fscanf(text_file, "%f", &temp);
+            X[i][j] = temp;
         }
     }
 
