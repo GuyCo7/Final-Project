@@ -8,15 +8,16 @@ double **get_diagonal_degree_matrix(double **X, int n);
 double row_sum(double **A, int i, int n);
 double **diagonal_matrix_power(double **D, double p, int n);
 double **matrix_mul(double **A, double **B, int n);
+void print_matrix(double **mat, int n);
 
 int main(int argc, char *argv[])
 {
 
     int i, j;
     /* goal can be sym|ddg|norm */
-    /* char *goal = argv[1]; */
+    char *goal = argv[1];
 
-    char *file_name = argv[1];
+    char *file_name = argv[2];
 
     FILE *text_file = fopen(file_name, "r");
 
@@ -77,81 +78,26 @@ int main(int argc, char *argv[])
 
     /* print A: */
     printf("A - \n");
-    for (i = 0; i < n; i++)
-    {
-        for (j = 0; j < n; j++)
-        {
-            printf("%.4f", A[i][j]);
-            if (j < n - 1)
-            {
-                printf(",");
-            }
-            else
-            {
-                printf("\n");
-            }
-        }
-    }
+    print_matrix(A, n);
 
     D = get_diagonal_degree_matrix(A, n);
 
     /* print D: */
     printf("D - \n");
-    for (i = 0; i < n; i++)
-    {
-        for (j = 0; j < n; j++)
-        {
-            printf("%.4f", D[i][j]);
-            if (j < n - 1)
-            {
-                printf(",");
-            }
-            else
-            {
-                printf("\n");
-            }
-        }
-    }
+    print_matrix(D, n);
 
     inverse_root_D = diagonal_matrix_power(D, -(1 / 2), n);
 
     /* print inverse_root_D: */
     printf("inverse_root_D - \n");
-    for (i = 0; i < n; i++)
-    {
-        for (j = 0; j < n; j++)
-        {
-            printf("%.4f", inverse_root_D[i][j]);
-            if (j < n - 1)
-            {
-                printf(",");
-            }
-            else
-            {
-                printf("\n");
-            }
-        }
-    }
+    print_matrix(inverse_root_D, n);
 
+    // W = D^-0.5 * A * D^-0.5
     W = matrix_mul(matrix_mul(inverse_root_D, A, n), inverse_root_D, n);
 
     /* print W: */
     printf("W - \n");
-    for (i = 0; i < n; i++)
-    {
-        for (j = 0; j < n; j++)
-        {
-            printf("%.4f", W[i][j]);
-            if (j < n - 1)
-            {
-                printf(",");
-            }
-            else
-            {
-                printf("\n");
-            }
-        }
-    }
+    print_matrix(W, n);
 
     return 0;
 }
@@ -344,4 +290,25 @@ double **matrix_mul(double **A, double **B, int n)
     }
 
     return result;
+}
+
+void print_matrix(double **mat, int n) {
+    int i, j;
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < n; j++)
+        {
+            printf("%.4f", mat[i][j]);
+            if (j < n - 1)
+            {
+                printf(",");
+            }
+            else
+            {
+                printf("\n");
+            }
+        }
+    }
+
+    return;
 }
