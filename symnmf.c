@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 double **get_similarity_matrix(double **X, int n);
 double euclidean_distance(double *point1, double *point2, int d);
@@ -12,15 +13,7 @@ void print_matrix(double **mat, int n);
 
 int main(int argc, char *argv[])
 {
-
     int i, j;
-    /* goal can be sym|ddg|norm */
-    char *goal = argv[1];
-
-    char *file_name = argv[2];
-
-    FILE *text_file = fopen(file_name, "r");
-
     int n = 5;
     int d = 3;
     double **X;
@@ -28,6 +21,12 @@ int main(int argc, char *argv[])
     double **D;
     double **inverse_root_D;
     double **W;
+
+    /* goal can be sym|ddg|norm */
+    char *goal = argv[1];
+
+    // char *file_name = argv[2];
+    // FILE *text_file = fopen(file_name, "r");
 
     /* Allocate memory for vectors */
     X = (double **)malloc(n * sizeof(double *));
@@ -80,11 +79,17 @@ int main(int argc, char *argv[])
     printf("A - \n");
     print_matrix(A, n);
 
+    if (strcmp(goal, "sym") == 0)
+        return 0;
+
     D = get_diagonal_degree_matrix(A, n);
 
     /* print D: */
     printf("D - \n");
     print_matrix(D, n);
+
+    if (strcmp(goal, "ddg") == 0)
+        return 0;
 
     inverse_root_D = diagonal_matrix_power(D, -(1 / 2), n);
 
@@ -92,12 +97,15 @@ int main(int argc, char *argv[])
     printf("inverse_root_D - \n");
     print_matrix(inverse_root_D, n);
 
-    // W = D^-0.5 * A * D^-0.5
+    /* W = D^-0.5 * A * D^-0.5 */
     W = matrix_mul(matrix_mul(inverse_root_D, A, n), inverse_root_D, n);
 
     /* print W: */
     printf("W - \n");
     print_matrix(W, n);
+
+    if (strcmp(goal, "norm") == 0)
+        return 0;
 
     return 0;
 }
@@ -292,7 +300,8 @@ double **matrix_mul(double **A, double **B, int n)
     return result;
 }
 
-void print_matrix(double **mat, int n) {
+void print_matrix(double **mat, int n)
+{
     int i, j;
     for (i = 0; i < n; i++)
     {
