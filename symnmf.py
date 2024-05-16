@@ -32,7 +32,12 @@ def main():
     text_file.close()
 
     vectors = raw_text.splitlines()
-    X = [vector.split(',') for vector in vectors]
+    data = [vector.split(',') for vector in vectors]
+    X = [row[:] for row in data]  # clone data to X
+    for vector_index in range(len(data)):
+        for token_index in range(len(data[vector_index])):
+            X[vector_index][token_index] = float(
+                data[vector_index][token_index])
     N = len(X)
     d = len(X[0])
 
@@ -41,18 +46,15 @@ def main():
     # STEP b:
     # STEP 1.1 - The Similarity Matrix:
     A = symnmf_capi.sym(N, d, X)
-
     print("A: \n" + str(A))
 
     # STEP 1.2 - The diagonal degree Matrix:
     D = symnmf_capi.ddg(N, d, X)
-
-    print("D: " + str(D))
+    print("D: \n" + str(D))
 
     # STEP 1.3 - The normalized similarity matrix:
     W = symnmf_capi.norm(N, d, X)
-
-    print("W : " + str(W))
+    print("W: \n" + str(W))
 
     # STEP 1.4 - Algorithm for optimizing H:
 
@@ -72,13 +74,15 @@ def main():
         iter += 1
         H = next_H
 
-    print("H -" + str(H))
+    print("H: \n" + str(H))
 
 
 def get_frobenius_norm(H):
     return math.sqrt(np.trace(H*H))
 
 # Function to convert a string to int
+
+
 def convert_to_number(str):
     try:
         return int(str)

@@ -14,6 +14,8 @@ static PyObject *sym(PyObject *self, PyObject *args)
     double **X;
     double **A;
     PyObject *final_result;
+    PyObject *py_value;
+    double num;
 
     /* Parse Python arguments */
     if (!PyArg_ParseTuple(args, "iiO", &n, &d, &vectors))
@@ -67,6 +69,17 @@ static PyObject *sym(PyObject *self, PyObject *args)
         }
     }
 
+    // convert python floats to c doubles
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < d; j++)
+        {
+            py_value = PyList_GetItem(PyList_GetItem(vectors, i), j);
+            num = PyFloat_AsDouble(py_value);
+            X[i][j] = num;
+        }
+    }
+
     A = get_similarity_matrix(X, n);
 
     /* Parse A from c doubles to python floats */
@@ -95,6 +108,8 @@ static PyObject *ddg(PyObject *self, PyObject *args)
     double **A;
     double **D;
     PyObject *final_result;
+    PyObject *py_value;
+    double num;
 
     /* Parse Python arguments */
     if (!PyArg_ParseTuple(args, "iiO", &n, &d, &vectors))
@@ -171,6 +186,17 @@ static PyObject *ddg(PyObject *self, PyObject *args)
         }
     }
 
+    // convert python floats to c doubles
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < d; j++)
+        {
+            py_value = PyList_GetItem(PyList_GetItem(vectors, i), j);
+            num = PyFloat_AsDouble(py_value);
+            X[i][j] = num;
+        }
+    }
+
     A = get_similarity_matrix(X, n);
     D = get_diagonal_degree_matrix(A, n);
 
@@ -201,6 +227,8 @@ static PyObject *norm(PyObject *self, PyObject *args)
     double **D;
     double **W;
     PyObject *final_result;
+    PyObject *py_value;
+    double num;
 
     /* Parse Python arguments */
     if (!PyArg_ParseTuple(args, "iiO", &n, &d, &vectors))
@@ -300,6 +328,17 @@ static PyObject *norm(PyObject *self, PyObject *args)
         }
     }
 
+    // convert python floats to c doubles
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < d; j++)
+        {
+            py_value = PyList_GetItem(PyList_GetItem(vectors, i), j);
+            num = PyFloat_AsDouble(py_value);
+            X[i][j] = num;
+        }
+    }
+
     A = get_similarity_matrix(X, n);
     D = get_diagonal_degree_matrix(A, n);
     W = get_normalized_similarity_matrix(A, D, n);
@@ -351,10 +390,11 @@ static PyMethodDef symnmfMethods[] = {
 };
 
 static struct PyModuleDef symnmfmodule = {
-    PyModuleDef_HEAD_INIT, "symnmf_capi", /* name of module */
-    NULL,                                 /* module documentation, may be NULL */
-    -1,                                   /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
-    symnmfMethods                         /* the PyMethodDef array from before containing the methods of the extension */
+    PyModuleDef_HEAD_INIT,
+    "symnmf_capi", /* name of module */
+    NULL,          /* module documentation, may be NULL */
+    -1,            /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+    symnmfMethods  /* the PyMethodDef array from before containing the methods of the extension */
 };
 
 PyMODINIT_FUNC PyInit_symnmf_capi(void)

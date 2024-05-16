@@ -18,8 +18,8 @@ void print_matrix(double **mat, int n);
 int main(int argc, char *argv[])
 {
     int i, j;
-    int n = 3;
-    int d = 3;
+    int n = 2;
+    int d = 2;
     double **X;
     // double data[MAX_ROWS][MAX_COLS];
     int rows = 0;
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         }
         for (j = 0; j < d; j++)
         {
-            // scanf("%lf,", &X[i][j]);
+            scanf("%lf,", &X[i][j]);
             // fscanf(text_file, "%f", &temp);
             // X[i][j] = temp;
         }
