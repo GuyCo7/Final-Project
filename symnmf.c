@@ -9,6 +9,7 @@
 double **get_similarity_matrix(double **X, int n);
 double euclidean_distance(double *point1, double *point2, int d);
 double **get_diagonal_degree_matrix(double **X, int n);
+double **get_normalized_similarity_matrix(double **A, double **D, int n);
 double row_sum(double **A, int i, int n);
 double **diagonal_matrix_power(double **D, double p, int n);
 double **matrix_mul(double **A, double **B, int n);
@@ -25,9 +26,9 @@ int main(int argc, char *argv[])
     int cols = 0;
     double **A;
     double **D;
-    double **inverse_root_D;
+    // double **inverse_root_D;
     double **W;
-    double temp;
+    // double temp;
 
     /* goal can be sym|ddg|norm */
     char *goal = argv[1];
@@ -93,7 +94,7 @@ int main(int argc, char *argv[])
         }
         for (j = 0; j < d; j++)
         {
-            scanf("%lf,", &X[i][j]);
+            // scanf("%lf,", &X[i][j]);
             // fscanf(text_file, "%f", &temp);
             // X[i][j] = temp;
         }
@@ -136,14 +137,16 @@ int main(int argc, char *argv[])
     if (strcmp(goal, "ddg") == 0)
         return 0;
 
-    inverse_root_D = diagonal_matrix_power(D, -(1 / 2), n);
+    // inverse_root_D = diagonal_matrix_power(D, -(1 / 2), n);
 
     /* print inverse_root_D: */
-    printf("inverse_root_D - \n");
-    print_matrix(inverse_root_D, n);
+    // printf("inverse_root_D - \n");
+    // print_matrix(inverse_root_D, n);
 
     /* W = D^-0.5 * A * D^-0.5 */
-    W = matrix_mul(matrix_mul(inverse_root_D, A, n), inverse_root_D, n);
+    // W = matrix_mul(matrix_mul(inverse_root_D, A, n), inverse_root_D, n);
+
+    W = get_normalized_similarity_matrix(A, D, n);
 
     /* print W: */
     printf("W - \n");
@@ -195,7 +198,6 @@ double **get_similarity_matrix(double **X, int n)
             }
             else
             {
-                printf("(euclidean_distance(X[i], X[j], n): %f", euclidean_distance(X[i], X[j], n));
                 A[i][j] = exp(-pow(euclidean_distance(X[i], X[j], n), 2) / 2);
             }
         }
@@ -344,6 +346,12 @@ double **matrix_mul(double **A, double **B, int n)
     }
 
     return result;
+}
+
+double **get_normalized_similarity_matrix(double **A, double **D, int n) {
+    double **inverse_root_D = diagonal_matrix_power(D, -(1 / 2), n);
+    
+    return matrix_mul(matrix_mul(inverse_root_D, A, n), inverse_root_D, n);
 }
 
 void print_matrix(double **mat, int n)

@@ -1,6 +1,8 @@
 import sys
 import math
 import numpy as np
+import pandas as pd
+from scipy.linalg import fractional_matrix_power
 import symnmf_capi
 
 MAX_ITER = 300
@@ -27,30 +29,31 @@ def main():
     assert goal in GOAL_PARAMS, "goal is incorrect! can be only: 'symnmf', 'sym', 'ddg', 'norm'"
 
     file_name = sys.argv[3]
-    text_file = open(file_name, 'r')
-    raw_text = text_file.read()
-    text_file.close()
-
-    vectors = raw_text.splitlines()
-    X = [vector.split(',') for vector in vectors]
-    N = len(X)
-    d = len(X[0])
+    print('file_name: ' + file_name)
+    data_table = pd.read_csv(file_name, header=None)
+    print("data_table: \n" + str(data_table))
+    X = data_table.to_numpy()
+    N, d = np.shape(X)
 
     print("X: \n" + str(X))
 
     # STEP b:
     # STEP 1.1 - The Similarity Matrix:
-    A = symnmf_capi.sym(N, d, X)
+    A = get_similarity_matrix(X)
 
     print("A: \n" + str(A))
 
     # STEP 1.2 - The diagonal degree Matrix:
-    D = symnmf_capi.ddg(N, d, X)
+    D = get_diagonal_matrix(A)
 
     print("D: " + str(D))
 
     # STEP 1.3 - The normalized similarity matrix:
-    W = symnmf_capi.norm(N, d, X)
+    tmp = fractional_matrix_power(D, -0.5)
+
+    print("tmp: " + str(tmp))
+
+    W = np.matmul(np.matmul(tmp, A), tmp)
 
     print("W : " + str(W))
 
@@ -60,6 +63,9 @@ def main():
     m = np.mean(W)
     H = np.random.uniform(low=0, high=np.random.uniform(
         0, 2 * math.sqrt(m / k)), size=(N, k))
+    # H = np.full_like(W, fill_value=np.random.uniform(0, 2 * math.sqrt(m / k)))
+
+    print("randomized H-" + str(H))
 
     # STEP 1.4.2 - Update H:
     diff = 1
@@ -74,11 +80,67 @@ def main():
 
     print("H -" + str(H))
 
+    # STEP 1.5 - Deriving a clustering solution
+
+    # clusters = np.empty((k, N))
+    # print("X - " + str(X))
+
+    # for i in range(N):
+    #     max_index = np.argmax(H[i])
+    #     print("max_index - " + str(max_index))
+
+    #     np.append(clusters[max_index], X[i])
+    #     # clusters[max_index].append(X[i])
+
+    # print("clusters - " + str(clusters))
+
+
+def get_diagonal_matrix(A):
+    rows, columns = np.shape(A)
+    D = np.empty_like(A)
+
+    for i in range(rows):
+        for j in range(columns):
+
+            if i != j:
+                D[i][j] = 0
+
+            else:
+                D[i][j] = np.sum(A, axis=1)[i]
+
+    return D
+
+
+def get_similarity_matrix(X):
+    rows, _columns = np.shape(X)
+    print("rows - " + str(rows))
+    A = np.empty(shape=(rows, rows))
+
+    for i in range(rows):
+        for j in range(rows):
+
+            if i == j:
+                A[i][j] = 0
+
+            else:
+                A[i][j] = math.exp(-(euclidean_distance(X[i], X[j]) ** 2) / 2)
+
+    return A
+
+
+def euclidean_distance(vector_x, vector_y):
+    sum = 0
+    for i in range(len(vector_x)):
+        sum += (vector_x[i] - vector_y[i]) ** 2
+    return math.sqrt(sum)
+
 
 def get_frobenius_norm(H):
     return math.sqrt(np.trace(H*H))
 
 # Function to convert a string to int
+
+
 def convert_to_number(str):
     try:
         return int(str)
