@@ -41,20 +41,24 @@ def main():
     N = len(X)
     d = len(X[0])
 
-    print("X: \n" + str(X))
+    print("X:")
+    print_matrix(X)
 
     # STEP b:
     # STEP 1.1 - The Similarity Matrix:
     A = symnmf_capi.sym(N, d, X)
-    print("A: \n" + str(A))
+    print("A:")
+    print_matrix(A)
 
     # STEP 1.2 - The diagonal degree Matrix:
-    D = symnmf_capi.ddg(N, d, X)
-    print("D: \n" + str(D))
+    D = symnmf_capi.ddg(N, A)
+    print("D:")
+    print_matrix(D)
 
     # STEP 1.3 - The normalized similarity matrix:
-    W = symnmf_capi.norm(N, d, X)
-    print("W: \n" + str(W))
+    W = symnmf_capi.norm(N, A, D)
+    print("W:")
+    print_matrix(W)
 
     # STEP 1.4 - Algorithm for optimizing H:
 
@@ -90,6 +94,19 @@ def convert_to_number(str):
         print(str + " is not a whole number!")
         print("Check your arguments again")
         exit()
+
+
+def print_matrix(mat):
+    rows = len(mat)
+    cols = len(mat[0])
+    for i in range(rows):
+        for j in range(cols):
+            if (j < cols - 1):
+                print("{:.4f}".format(mat[i][j]), end=",")
+            else:
+                print("{:.4f}".format(mat[i][j]), end="")
+
+        print()
 
 
 if __name__ == "__main__":
