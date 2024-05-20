@@ -3,11 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define BETA 0.5
+#define EPSILON 0.0001
+
 void get_similarity_matrix(double **X, double **A, int n, int d);
 double squared_euclidean_distance(double *point1, double *point2, int d);
 void get_diagonal_degree_matrix(double **A, double **D, int n);
 void get_normalized_similarity_matrix(double **A, double **D, double ***W, int n);
-/* void get_clusters(double **W, double **H, int n, int k); */
+void get_clusters(double **W, double **H, double ***next_H, int n, int k);
 double row_sum(double **A, int i, int n);
 void diagonal_matrix_power(double **D, double ***inverse_root_D, int n);
 void matrix_mul(double **A, double **B, int n, double ***result);
@@ -16,6 +19,10 @@ void readCSV(const char *file_name, double **matrix, int rows, int cols);
 void allocate_matrix(double ***mat, int n, int d);
 void free_matrix(double **mat, int rows);
 void countRowsAndCols(const char *file_name, int *rows, int *cols);
+void multiply_matrices(double **A, double **B, double ***C, int n, int m, int k);
+double frobenius_norm(double **A, double **B, int rows, int cols);
+void transpose(double **mat, double ***result, int rows, int cols);
+void copy_matrix(double **A, double ***B, int n, int k);
 
 int main(int argc, char *argv[])
 {
@@ -243,165 +250,113 @@ void get_normalized_similarity_matrix(double **A, double **D, double ***W, int n
     matrix_mul(tmp, inverse_root_D, n, W);
 }
 
-/* void get_clusters(double **W, double **H, int n, int k)
-// {
-//     int difference = 1;
-//     int iter = 1;
+double calculate_formula(double **A, double **B, double **C, int i, int j)
+{
+    return C[i][j] * (1 - BETA + BETA * (A[i][j] / B[i][j]));
+}
 
-//     double **WH, **HTH, **HTH_H, **numerator, **denominator;
-//     allocate_matrix(&WH, n, k);
-//     allocate_matrix(&HTH, k, k);
-//     allocate_matrix(&HTH_H, n, k);
-//     allocate_matrix(&numerator, n, k);
-//     allocate_matrix(&denominator, n, k);
+void copy_matrix(double **source, double ***destination, int n, int k)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < k; j++)
+        {
+            (*destination)[i][j] = source[i][j];
+        }
+    }
+}
 
-//     matrix_mul_not_square(W, H, n, n, k, WH);
+void get_clusters(double **W, double **H, double ***next_H, int n, int k)
+{
+    int i, j;
+    int iter = 1;
 
-//     double **H_transpose;
-//     allocate_matrix(&H_transpose, k, n);
-//     transpose(H, &H_transpose, n, k);
+    double **WH, **HTH, **HTH_H;
+    allocate_matrix(&WH, n, k);
+    allocate_matrix(&HTH, n, n);
+    allocate_matrix(&HTH_H, n, k);
 
-//     matrix_mul_not_square(H_transpose, H, n, k, k, HTH);
-//     matrix_mul_not_square(H, HTH, n, k, k, HTH_H);
+    double **H_transpose;
+    allocate_matrix(&H_transpose, k, n);
 
-//     elementwise_divide();
+    while (iter <= 300)
+    {
 
-//     while (iter <= 300)
-//     {
-//         double norm = frobenius_norm(H_new, H, n, k);
-//         if (norm < 0.0001)
-//         {
-//             break;
-//         }
-//         H = H_new;
+        // numerator
+        multiply_matrices(W, H, &WH, n, n, k);
 
-//         iter++;
-//     }
-// }
+        // denominator
+        transpose(H, &H_transpose, n, k);
+        multiply_matrices(H, H_transpose, &HTH, n, k, n);
+        multiply_matrices(HTH, H, &HTH_H, n, n, k);
 
-// void update_matrix(double **H_new, double **H, double **W, int rows, int cols, int common_dim, double beta)
-// {
-//     double **WH, **HTH, **HTH_H, **numerator, **denominator;
+        for (i = 0; i < n; i++)
+        {
+            for (j = 0; j < k; j++)
+            {
+                (*next_H)[i][j] = calculate_formula(WH, HTH_H, H, i, j);
+            }
+        }
 
-//     // Allocate temporary matrices
-//     allocate_matrix(&WH, rows, cols);
-//     allocate_matrix(&HTH, cols, cols);
-//     allocate_matrix(&HTH_H, rows, cols);
-//     allocate_matrix(&numerator, rows, cols);
-//     allocate_matrix(&denominator, rows, cols);
+        double norm = frobenius_norm(*next_H, H, n, k);
+        if (norm < EPSILON)
+        {
+            break;
+        }
 
-//     // WH = W * H
-//     matrix_multiply(WH, W, H, rows, common_dim, cols);
+        copy_matrix(*next_H, &H, n, k);
 
-//     // HTH = H^T * H
-//     double **H_transpose;
-//     allocate_matrix(&H_transpose, cols, common_dim);
-//     for (int i = 0; i < common_dim; i++)
-//     {
-//         for (int j = 0; j < cols; j++)
-//         {
-//             H_transpose[j][i] = H[i][j];
-//         }
-//     }
-//     matrix_multiply(HTH, H_transpose, H, cols, common_dim, cols);
+        iter++;
+    }
 
-//     // HTH_H = H * HTH
-//     matrix_multiply(HTH_H, H, HTH, rows, cols, cols);
+    free_matrix(H, n);
+    free_matrix(WH, n);
+    free_matrix(HTH, n);
+    free_matrix(HTH_H, n);
+    free_matrix(H_transpose, k);
+}
 
-//     // Numerator: WH
-//     // Denominator: HTH_H
-//     elementwise_divide(numerator, WH, HTH_H, rows, cols);
+double frobenius_norm(double **A, double **B, int rows, int cols)
+{
+    double sum = 0.0;
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            double diff = A[i][j] - B[i][j];
+            sum += diff * diff;
+        }
+    }
+    return sqrt(sum);
+}
 
-//     // H_new = H * (1 - beta + beta * numerator)
-//     for (int i = 0; i < rows; i++)
-//     {
-//         for (int j = 0; j < cols; j++)
-//         {
-//             H_new[i][j] = H[i][j] * (1 - beta + beta * numerator[i][j]);
-//         }
-//     }
+void transpose(double **mat, double ***result, int rows, int cols)
+{
+    int i, j;
 
-//     // Free temporary matrices
-//     free_matrix(WH, rows);
-//     free_matrix(HTH, cols);
-//     free_matrix(HTH_H, rows);
-//     free_matrix(numerator, rows);
-//     free_matrix(denominator, rows);
-//     free_matrix(H_transpose, cols);
-// }
+    for (i = 0; i < rows; i++)
+    {
+        for (j = 0; j < cols; j++)
+        {
+            (*result)[j][i] = mat[i][j];
+        }
+    }
+}
 
-// double frobenius_norm(double **mat1, double **mat2, int rows, int cols)
-// {
-//     double sum = 0.0;
-//     for (int i = 0; i < rows; i++)
-//     {
-//         for (int j = 0; j < cols; j++)
-//         {
-//             double diff = mat1[i][j] - mat2[i][j];
-//             sum += diff * diff;
-//         }
-//     }
-//     return sqrt(sum);
-// }
-
-// void transpose(double **mat, double ***result, int rows, int cols)
-// {
-//     int i, j;
-
-//     for (i = 0; i < rows; i++)
-//     {
-//         for (j = 0; j < cols; j++)
-//         {
-//             (*result)[i][j] = mat[j][i];
-//         }
-//     }
-// }
-
-// void substruct_matrices(double **A, double **B, int n, double ***result)
-// {
-//     int i, j;
-
-//     for (i = 0; i < n; i++)
-//     {
-//         for (j = 0; j < n; j++)
-//         {
-//             (*result)[i][j] = A[i][j] - B[i][j];
-//         }
-//     }
-// }
-
-// void elementwise_divide(double **A, double **B, int rows, int cols, double ***result)
-// {
-//     int i, j;
-
-//     for (i = 0; i < rows; i++)
-//     {
-//         for (j = 0; j < cols; j++)
-//         {
-//             if (B[i][j] != 0)
-//             {
-//                 (*result)[i][j] = A[i][j] / B[i][j];
-//             }
-//             else
-//             {
-//                 (*result)[i][j] = 0;
-//             }
-//         }
-//     }
-// }
-
-// void elementwise_multiply(double **result, double **mat1, double **mat2, int rows, int cols)
-// {
-//     for (int i = 0; i < rows; i++)
-//     {
-//         for (int j = 0; j < cols; j++)
-//         {
-//             result[i][j] = mat1[i][j] * mat2[i][j];
-//         }
-//     }
-// }
-
-*/
+void multiply_matrices(double **A, double **B, double ***C, int n, int m, int k)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < k; j++)
+        {
+            (*C)[i][j] = 0.0;
+            for (int l = 0; l < m; l++)
+            {
+                (*C)[i][j] += A[i][l] * B[l][j];
+            }
+        }
+    }
+}
 
 void allocate_matrix(double ***matrix, int rows, int cols)
 {
