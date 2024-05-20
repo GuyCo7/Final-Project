@@ -135,7 +135,7 @@ void readCSV(const char *file_name, double **matrix, int rows, int cols)
     {
         for (j = 0; j < cols; j++)
         {
-            if (fscanf(file, "%lf,", &matrix[i][j]) != 1)
+            if (fscanf_s(file, "%lf,", &matrix[i][j]) != 1)
             {
                 perror("Error reading file");
                 fclose(file);

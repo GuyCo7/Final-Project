@@ -46,17 +46,17 @@ def main():
 
     # STEP b:
     # STEP 1.1 - The Similarity Matrix:
-    A = symnmf_capi.sym(N, d, X)
+    A = symnmf_capi.sym(X, N, d)
     print("A:")
     print_matrix(A)
 
     # STEP 1.2 - The diagonal degree Matrix:
-    D = symnmf_capi.ddg(N, A)
+    D = symnmf_capi.ddg(A, N)
     print("D:")
     print_matrix(D)
 
     # STEP 1.3 - The normalized similarity matrix:
-    W = symnmf_capi.norm(N, A, D)
+    W = symnmf_capi.norm(A, D, N)
     print("W:")
     print_matrix(W)
 
@@ -67,7 +67,7 @@ def main():
     H = np.random.uniform(low=0, high=np.random.uniform(
         0, 2 * math.sqrt(m / k)), size=(N, k))
 
-    # STEP 1.4.2 - Update H:
+    # # STEP 1.4.2 - Update H:
     diff = 1
     iter = 1
     while diff >= EPSILON and iter <= MAX_ITER:
