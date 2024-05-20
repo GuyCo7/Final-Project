@@ -50,8 +50,8 @@ static PyObject *sym(PyObject *self, PyObject *args)
         PyList_SET_ITEM(final_result, i, row_list);
     }
 
-    free(X);
-    free(A);
+    free_matrix(X, n);
+    free_matrix(A, n);
 
     return final_result;
 }
@@ -101,8 +101,8 @@ static PyObject *ddg(PyObject *self, PyObject *args)
         PyList_SET_ITEM(final_result, i, row_list);
     }
 
-    free(A);
-    free(D);
+    free_matrix(A, n);
+    free_matrix(D, n);
 
     return final_result;
 }
@@ -167,85 +167,93 @@ static PyObject *norm(PyObject *self, PyObject *args)
         PyList_SET_ITEM(final_result, i, row_list);
     }
 
-    free(A);
-    free(D);
-    free(W);
+    free_matrix(A, n);
+    free_matrix(D, n);
+    free_matrix(W, n);
 
     return final_result;
 }
 
-// static PyObject *symnmf(PyObject *self, PyObject *args)
-// {
-//     int n, k, i, j;
-//     PyObject *vectors;
-//     PyObject *initial_H;
-//     double **A;
-//     double **D;
-//     double **W;
-//     double **H;
-//     PyObject *final_result;
-//     PyObject *py_value;
-//     double num;
+static PyObject *symnmf(PyObject *self, PyObject *args)
+{
+    int n, k, d, i, j;
+    PyObject *vectors;
+    PyObject *initial_H;
+    double **X;
+    double **A;
+    double **D;
+    double **W;
+    double **H;
+    double **final_H;
+    PyObject *final_result;
+    PyObject *py_value;
+    double num;
 
-//     if (!PyArg_ParseTuple(args, "iiO", &n, &k, &vectors, &initial_H))
-//     {
-//         return NULL;
-//     }
+    if (!PyArg_ParseTuple(args, "OOiii", &vectors, &initial_H, &n, &d, &k))
+    {
+        return NULL;
+    }
 
-//     allocate_matrix(&A, n, n);
+    allocate_matrix(&X, n, d);
 
-//     allocate_matrix(&D, n, n);
+    allocate_matrix(&A, n, n);
 
-//     allocate_matrix(&W, n, n);
+    allocate_matrix(&D, n, n);
 
-//     allocate_matrix(&H, n, n);
+    allocate_matrix(&W, n, n);
 
-//     // convert python floats to c doubles
-//     for (i = 0; i < n; i++)
-//     {
-//         for (j = 0; j < n; j++)
-//         {
-//             py_value = PyList_GetItem(PyList_GetItem(vectors, i), j);
-//             num = PyFloat_AsDouble(py_value);
-//             X[i][j] = num;
-//         }
-//     }
+    allocate_matrix(&H, n, k);
 
-//     for (i = 0; i < n; i++)
-//     {
-//         for (j = 0; j < n; j++)
-//         {
-//             py_value = PyList_GetItem(PyList_GetItem(initial_H, i), j);
-//             num = PyFloat_AsDouble(py_value);
-//             H[i][j] = num;
-//         }
-//     }
+    allocate_matrix(&final_H, n, k);
 
-//     get_similarity_matrix(X, A, n);
-//     get_diagonal_degree_matrix(A, D, n);
-//     get_normalized_similarity_matrix(A, D, W, n);
-//     get_clusters(W, H, n, k);
+    // convert python floats to c doubles
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < d; j++)
+        {
+            py_value = PyList_GetItem(PyList_GetItem(vectors, i), j);
+            num = PyFloat_AsDouble(py_value);
+            X[i][j] = num;
+        }
+    }
 
-//     /* Parse A from c doubles to python floats */
-//     final_result = PyList_New(n);
-//     for (i = 0; i < n; i++)
-//     {
-//         PyObject *row_list = PyList_New(n);
-//         for (j = 0; j < k; j++)
-//         {
-//             PyObject *float_obj = PyFloat_FromDouble(H[i][j]);
-//             PyList_SET_ITEM(row_list, j, float_obj);
-//         }
-//         PyList_SET_ITEM(final_result, i, row_list);
-//     }
+    // convert python floats to c doubles
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < k; j++)
+        {
+            py_value = PyList_GetItem(PyList_GetItem(initial_H, i), j);
+            num = PyFloat_AsDouble(py_value);
+            H[i][j] = num;
+        }
+    }
 
-//     free(A);
-//     free(D);
-//     free(W);
-//     free(H);
+    get_similarity_matrix(X, A, n, d);
+    get_diagonal_degree_matrix(A, D, n);
+    get_normalized_similarity_matrix(A, D, &W, n);
 
-//     return final_result;
-// }
+    get_clusters(W, H, &final_H, n, k);
+
+    /* Parse A from c doubles to python floats */
+    final_result = PyList_New(n);
+    for (i = 0; i < n; i++)
+    {
+        PyObject *row_list = PyList_New(k);
+        for (j = 0; j < k; j++)
+        {
+            PyObject *float_obj = PyFloat_FromDouble(final_H[i][j]);
+            PyList_SET_ITEM(row_list, j, float_obj);
+        }
+        PyList_SET_ITEM(final_result, i, row_list);
+    }
+
+    free_matrix(A, n);
+    free_matrix(D, n);
+    free_matrix(W, n);
+    free_matrix(final_H, n);
+
+    return final_result;
+}
 
 static PyMethodDef symnmfMethods[] = {
     {"sym",                                                                       /* the Python method name that will be used */
@@ -272,14 +280,14 @@ static PyMethodDef symnmfMethods[] = {
                "n = number of vectors given.\n"
                "d = number of dimensions of the vectors.\n"
                "vectors - a list of list contains the vectors to be clustered")},
-    // {"symnmf",                                                                 /* the Python method name that will be used */
-    //  (PyCFunction)symnmf,                                                      /* the C-function that implements the Python function and returns static PyObject*  */
-    //  METH_VARARGS,                                                             /* flags indicating parameters
-    //                                                                               accepted for this function */
-    //  PyDoc_STR("performing symnmf algorithm on given vectors. \n Arguments:\n" /* The docstring for the function */
-    //            "n = number of vectors given.\n"
-    //            "d = number of dimensions of the vectors.\n"
-    //            "vectors - a list of list contains the vectors to be clustered")},
+    {"symnmf",                                                                 /* the Python method name that will be used */
+     (PyCFunction)symnmf,                                                      /* the C-function that implements the Python function and returns static PyObject*  */
+     METH_VARARGS,                                                             /* flags indicating parameters
+                                                                                  accepted for this function */
+     PyDoc_STR("performing symnmf algorithm on given vectors. \n Arguments:\n" /* The docstring for the function */
+               "n = number of vectors given.\n"
+               "d = number of dimensions of the vectors.\n"
+               "vectors - a list of list contains the vectors to be clustered")},
     {NULL, NULL, 0, NULL} /* The last entry must be all NULL as shown to act as a
                              sentinel. Python looks for this entry to know that all
                              of the functions for the module have been defined. */

@@ -67,26 +67,16 @@ def main():
     H = np.random.uniform(low=0, high=np.random.uniform(
         0, 2 * math.sqrt(m / k)), size=(N, k))
 
-    # # STEP 1.4.2 - Update H:
-    diff = 1
-    iter = 1
-    while diff >= EPSILON and iter <= MAX_ITER:
-        next_H = H * (1 - BETA + BETA*(np.matmul(W, H) /
-                                       np.matmul(np.matmul(H, np.transpose(H)), H)))
+    initial_H = H.tolist()
 
-        diff = get_frobenius_norm(next_H - H) ** 2
-        iter += 1
-        H = next_H
+    final_H = symnmf_capi.symnmf(X, initial_H, N, d, k)
+    print("H:")
+    print_matrix(final_H)
 
-    print("H: \n" + str(H))
+    return
 
-
-def get_frobenius_norm(H):
-    return math.sqrt(np.trace(H*H))
 
 # Function to convert a string to int
-
-
 def convert_to_number(str):
     try:
         return int(str)
