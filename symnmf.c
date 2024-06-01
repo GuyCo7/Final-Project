@@ -361,16 +361,21 @@ void multiply_matrices(double **A, double **B, double ***C, int n, int m, int k)
 void allocate_matrix(double ***matrix, int rows, int cols)
 {
     int i;
-    *matrix = (double **)malloc(rows * sizeof(double *));
+    *matrix = (double **)calloc(rows, sizeof(double *));
     for (i = 0; i < rows; i++)
     {
-        (*matrix)[i] = (double *)malloc(cols * sizeof(double));
+        (*matrix)[i] = (double *)calloc(cols, sizeof(double));
     }
 }
 
 void free_matrix(double **mat, int rows)
 {
     int i;
+    if (mat == NULL)
+    {
+        printf("Matrix is already freed or not allocated\n");
+        return;
+    }
     for (i = 0; i < rows; i++)
     {
         free(mat[i]);

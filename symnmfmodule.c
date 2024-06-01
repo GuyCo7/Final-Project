@@ -251,7 +251,6 @@ static PyObject *symnmf(PyObject *self, PyObject *args)
     free_matrix(A, n);
     free_matrix(D, n);
     free_matrix(W, n);
-    free_matrix(H, n);
     free_matrix(final_H, n);
 
     return final_result;
