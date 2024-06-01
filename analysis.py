@@ -40,9 +40,6 @@ def main():
 
     H = symnmf_capi.symnmf(X, initial_H, N, d, k)
 
-    print("H ---")
-    print_matrix(H)
-
     labels = np.argmax(H, axis=1)
 
     score = sklearn.metrics.silhouette_score(X, labels)
