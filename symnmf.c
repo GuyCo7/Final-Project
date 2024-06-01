@@ -257,9 +257,10 @@ double calculate_formula(double **A, double **B, double **C, int i, int j)
 
 void copy_matrix(double **source, double ***destination, int n, int k)
 {
-    for (int i = 0; i < n; i++)
+    int i, j;
+    for (i = 0; i < n; i++)
     {
-        for (int j = 0; j < k; j++)
+        for (j = 0; j < k; j++)
         {
             (*destination)[i][j] = source[i][j];
         }
@@ -271,21 +272,18 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
     int i, j;
     int iter = 1;
 
-    double **WH, **HTH, **HTH_H;
+    double **H_transpose, **WH, **HTH, **HTH_H;
     allocate_matrix(&WH, n, k);
     allocate_matrix(&HTH, n, n);
     allocate_matrix(&HTH_H, n, k);
-
-    double **H_transpose;
     allocate_matrix(&H_transpose, k, n);
 
     while (iter <= 300)
     {
+        double norm;
 
-        // numerator
         multiply_matrices(W, H, &WH, n, n, k);
 
-        // denominator
         transpose(H, &H_transpose, n, k);
         multiply_matrices(H, H_transpose, &HTH, n, k, n);
         multiply_matrices(HTH, H, &HTH_H, n, n, k);
@@ -298,7 +296,7 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
             }
         }
 
-        double norm = frobenius_norm(*next_H, H, n, k);
+        norm = frobenius_norm(*next_H, H, n, k);
         if (norm < EPSILON)
         {
             break;
@@ -318,10 +316,11 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
 
 double frobenius_norm(double **A, double **B, int rows, int cols)
 {
+    int i, j;
     double sum = 0.0;
-    for (int i = 0; i < rows; i++)
+    for (i = 0; i < rows; i++)
     {
-        for (int j = 0; j < cols; j++)
+        for (j = 0; j < cols; j++)
         {
             double diff = A[i][j] - B[i][j];
             sum += diff * diff;
@@ -345,12 +344,13 @@ void transpose(double **mat, double ***result, int rows, int cols)
 
 void multiply_matrices(double **A, double **B, double ***C, int n, int m, int k)
 {
-    for (int i = 0; i < n; i++)
+    int i, j, l;
+    for (i = 0; i < n; i++)
     {
-        for (int j = 0; j < k; j++)
+        for (j = 0; j < k; j++)
         {
             (*C)[i][j] = 0.0;
-            for (int l = 0; l < m; l++)
+            for (l = 0; l < m; l++)
             {
                 (*C)[i][j] += A[i][l] * B[l][j];
             }
