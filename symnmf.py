@@ -41,37 +41,33 @@ def main():
     N = len(X)
     d = len(X[0])
 
-    print("X:")
-    print_matrix(X)
-
     # STEP b:
     # STEP 1.1 - The Similarity Matrix:
     A = symnmf_capi.sym(X, N, d)
-    print("A:")
-    print_matrix(A)
+    if goal == 'sym':
+        print_matrix(A)
 
     # STEP 1.2 - The diagonal degree Matrix:
     D = symnmf_capi.ddg(A, N)
-    print("D:")
-    print_matrix(D)
+    if goal == 'ddg':
+        print_matrix(D)
 
     # STEP 1.3 - The normalized similarity matrix:
     W = symnmf_capi.norm(A, D, N)
-    print("W:")
-    print_matrix(W)
+    if goal == 'norm':
+        print_matrix(W)
 
     # STEP 1.4 - Algorithm for optimizing H:
 
     # STEP 1.4.1 - Initialize H:
     m = np.mean(W)
-    H = np.random.uniform(low=0, high=np.random.uniform(
-        0, 2 * math.sqrt(m / k)), size=(N, k))
+    H = np.random.uniform(low=0, high=2 * math.sqrt(m / k), size=(N, k))
 
     initial_H = H.tolist()
 
     final_H = symnmf_capi.symnmf(X, initial_H, N, d, k)
-    print("H:")
-    print_matrix(final_H)
+    if goal == 'symnmf':
+        print_matrix(final_H)
 
     return
 

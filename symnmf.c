@@ -400,6 +400,7 @@ void print_matrix(double **mat, int n, int d)
                 printf("\n");
             }
         }
+        fflush(stdout);
     }
 
     return;
