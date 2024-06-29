@@ -43,13 +43,13 @@ def main():
     labels = np.argmax(H, axis=1)
 
     score = sklearn.metrics.silhouette_score(X, labels)
-    print("nmf:", score)
+    print("nmf:", "{:.4f}".format(score))
 
     kmeans_labels = kmeans_fit(X, N, d, k)
     np_kmeans_labels = np.array(kmeans_labels)
 
     kmeans_score = sklearn.metrics.silhouette_score(X, np_kmeans_labels)
-    print("kmeans:", kmeans_score)
+    print("kmeans:", "{:.4f}".format(kmeans_score))
 
     return
 
