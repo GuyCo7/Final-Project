@@ -142,7 +142,7 @@ void readCSV(const char *file_name, double **matrix, int rows, int cols)
     {
         for (j = 0; j < cols; j++)
         {
-            if (fscanf_s(file, "%lf,", &matrix[i][j]) != 1)
+            if (fscanf(file, "%lf,", &matrix[i][j]) != 1)
             {
                 perror("Error reading file");
                 fclose(file);
@@ -250,11 +250,6 @@ void get_normalized_similarity_matrix(double **A, double **D, double ***W, int n
     matrix_mul(tmp, inverse_root_D, n, W);
 }
 
-double calculate_formula(double **A, double **B, double **C, int i, int j)
-{
-    return C[i][j] * (1 - BETA + BETA * (A[i][j] / B[i][j]));
-}
-
 void copy_matrix(double **source, double ***destination, int n, int k)
 {
     int i, j;
@@ -292,7 +287,7 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
         {
             for (j = 0; j < k; j++)
             {
-                (*next_H)[i][j] = calculate_formula(WH, HTH_H, H, i, j);
+                (*next_H)[i][j] = H[i][j] * ((1 - BETA) + BETA * (WH[i][j] / HTH_H[i][j]));
             }
         }
 
