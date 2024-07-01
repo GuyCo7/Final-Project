@@ -11,6 +11,8 @@ BETA = 0.5
 
 def main():
 
+    np.random.seed(0)
+    
     k = convert_to_number(sys.argv[1])
 
     file_name = sys.argv[2]
@@ -33,8 +35,7 @@ def main():
     W = symnmf_capi.norm(A, D, N)
 
     m = np.mean(W)
-    H = np.random.uniform(low=0, high=np.random.uniform(
-        0, 2 * math.sqrt(m / k)), size=(N, k))
+    H = np.random.uniform(low=0, high=2 * math.sqrt(m / k), size=(N, k))
 
     initial_H = H.tolist()
 
