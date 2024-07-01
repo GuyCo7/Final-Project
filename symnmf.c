@@ -265,7 +265,16 @@ void copy_matrix(double **source, double ***destination, int n, int k)
 void get_clusters(double **W, double **H, double ***next_H, int n, int k)
 {
     int i, j;
-    int iter = 1;
+    int iter = 0;
+
+    /*
+    printf("W:\n");
+    print_matrix(W, n, n);
+    printf("H:\n");
+    print_matrix(H, n, k);
+    printf("next_H:\n");
+    print_matrix(*next_H, n, k);
+    */
 
     double **H_transpose, **WH, **HTH, **HTH_H;
     allocate_matrix(&WH, n, k);
@@ -277,6 +286,12 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
     {
         double norm;
 
+        /* copy */
+        if (iter != 0)
+        {
+            copy_matrix(*next_H, &H, n, k);
+        }
+
         multiply_matrices(W, H, &WH, n, n, k);
 
         transpose(H, &H_transpose, n, k);
@@ -287,6 +302,7 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
         {
             for (j = 0; j < k; j++)
             {
+                /* copy */
                 (*next_H)[i][j] = H[i][j] * ((1 - BETA) + BETA * (WH[i][j] / HTH_H[i][j]));
             }
         }
@@ -294,10 +310,12 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
         norm = frobenius_norm(*next_H, H, n, k);
         if (norm < EPSILON)
         {
+            printf("iter: %d\n", iter);
+            printf("norm: %f\n", norm);
             break;
         }
 
-        copy_matrix(*next_H, &H, n, k);
+        /* copy_matrix(*next_H, &H, n, k); */
 
         iter++;
     }
