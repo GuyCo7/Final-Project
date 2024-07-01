@@ -12,8 +12,7 @@ void get_diagonal_degree_matrix(double **A, double **D, int n);
 void get_normalized_similarity_matrix(double **A, double **D, double ***W, int n);
 void get_clusters(double **W, double **H, double ***next_H, int n, int k);
 double row_sum(double **A, int i, int n);
-void diagonal_matrix_power(double **D, double ***inverse_root_D, int n);
-void matrix_mul(double **A, double **B, int n, double ***result);
+void get_diagonal_inverse_root(double **D, double ***inverse_root_D, int n);
 void print_matrix(double **mat, int n, int d);
 void readCSV(const char *file_name, double **matrix, int rows, int cols);
 void allocate_matrix(double ***mat, int n, int d);
@@ -78,7 +77,6 @@ int main(int argc, char *argv[])
     free_matrix(X, n);
     free_matrix(A, n);
     free_matrix(D, n);
-    free_matrix(W, n);
 
     if (strcmp(goal, "norm") == 0)
     {
@@ -207,7 +205,7 @@ double row_sum(double **A, int i, int n)
     return sum;
 }
 
-void diagonal_matrix_power(double **D, double ***inverse_root_D, int n)
+void get_diagonal_inverse_root(double **D, double ***inverse_root_D, int n)
 {
     int i;
     for (i = 0; i < n; i++)
@@ -219,35 +217,21 @@ void diagonal_matrix_power(double **D, double ***inverse_root_D, int n)
     }
 }
 
-void matrix_mul(double **A, double **B, int n, double ***result)
-{
-    int i, j, k;
-
-    for (i = 0; i < n; i++)
-    {
-        for (j = 0; j < n; j++)
-        {
-            (*result)[i][j] = 0;
-
-            for (k = 0; k < n; k++)
-            {
-                (*result)[i][j] += A[i][k] * B[k][j];
-            }
-        }
-    }
-}
-
 void get_normalized_similarity_matrix(double **A, double **D, double ***W, int n)
 {
     double **inverse_root_D;
-    double **tmp;
+    double **IR_D_mul_A;
+
     allocate_matrix(&inverse_root_D, n, n);
-    allocate_matrix(&tmp, n, n);
+    allocate_matrix(&IR_D_mul_A, n, n);
 
-    diagonal_matrix_power(D, &inverse_root_D, n);
+    get_diagonal_inverse_root(D, &inverse_root_D, n);
 
-    matrix_mul(inverse_root_D, A, n, &tmp);
-    matrix_mul(tmp, inverse_root_D, n, W);
+    multiply_matrices(inverse_root_D, A, &IR_D_mul_A, n, n, n);
+    multiply_matrices(IR_D_mul_A, inverse_root_D, W, n, n, n);
+
+    free_matrix(inverse_root_D, n);
+    free_matrix(IR_D_mul_A, n);
 }
 
 void copy_matrix(double **source, double ***destination, int n, int k)
@@ -266,15 +250,6 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
 {
     int i, j;
     int iter = 0;
-
-    /*
-    printf("W:\n");
-    print_matrix(W, n, n);
-    printf("H:\n");
-    print_matrix(H, n, k);
-    printf("next_H:\n");
-    print_matrix(*next_H, n, k);
-    */
 
     double **H_transpose, **WH, **HTH, **HTH_H;
     allocate_matrix(&WH, n, k);
@@ -303,15 +278,13 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
             for (j = 0; j < k; j++)
             {
                 /* copy */
-                (*next_H)[i][j] = H[i][j] * ((1 - BETA) + BETA * (WH[i][j] / HTH_H[i][j]));
+                (*next_H)[i][j] = H[i][j] * ((1 - BETA) + (BETA * (WH[i][j] / HTH_H[i][j])));
             }
         }
 
         norm = frobenius_norm(*next_H, H, n, k);
         if (norm < EPSILON)
         {
-            printf("iter: %d\n", iter);
-            printf("norm: %f\n", norm);
             break;
         }
 
@@ -319,6 +292,8 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
 
         iter++;
     }
+
+    copy_matrix(H, next_H, n, k);
 
     free_matrix(H, n);
     free_matrix(WH, n);
@@ -355,17 +330,17 @@ void transpose(double **mat, double ***result, int rows, int cols)
     }
 }
 
-void multiply_matrices(double **A, double **B, double ***C, int n, int m, int k)
+void multiply_matrices(double **A, double **B, double ***C, int rowsA, int colsA, int colsB)
 {
-    int i, j, l;
-    for (i = 0; i < n; i++)
+    int i, j, k;
+    for (i = 0; i < rowsA; i++)
     {
-        for (j = 0; j < k; j++)
+        for (j = 0; j < colsB; j++)
         {
             (*C)[i][j] = 0.0;
-            for (l = 0; l < m; l++)
+            for (k = 0; k < colsA; k++)
             {
-                (*C)[i][j] += A[i][l] * B[l][j];
+                (*C)[i][j] += A[i][k] * B[k][j];
             }
         }
     }

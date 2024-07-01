@@ -2,7 +2,6 @@ import sys
 import math
 import numpy as np
 import sklearn.metrics
-from sklearn.decomposition import NMF
 import symnmf_capi
 
 MAX_ITER = 300
@@ -51,15 +50,6 @@ def main():
 
     kmeans_score = sklearn.metrics.silhouette_score(X, np_kmeans_labels)
     print("kmeans:", "{:.4f}".format(kmeans_score))
-    
-    # model = NMF(n_components=k, init='random', random_state=0)
-    # W_OG = model.fit_transform(X)
-    # H_OG = model.components_
-    
-    # print("W_OG:")
-    # print(W_OG)
-    # print("H_OG:")
-    # print(H_OG)
 
     return
 
