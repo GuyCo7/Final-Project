@@ -261,7 +261,6 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
     {
         double norm;
 
-        /* copy */
         if (iter != 0)
         {
             copy_matrix(*next_H, &H, n, k);
@@ -277,7 +276,6 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
         {
             for (j = 0; j < k; j++)
             {
-                /* copy */
                 (*next_H)[i][j] = H[i][j] * ((1 - BETA) + (BETA * (WH[i][j] / HTH_H[i][j])));
             }
         }
@@ -288,12 +286,8 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
             break;
         }
 
-        /* copy_matrix(*next_H, &H, n, k); */
-
         iter++;
     }
-
-    copy_matrix(H, next_H, n, k);
 
     free_matrix(H, n);
     free_matrix(WH, n);
@@ -314,7 +308,7 @@ double frobenius_norm(double **A, double **B, int rows, int cols)
             sum += diff * diff;
         }
     }
-    return sqrt(sum);
+    return sum;
 }
 
 void transpose(double **mat, double ***result, int rows, int cols)
