@@ -33,7 +33,10 @@ int main(int argc, char *argv[])
     int n, d;
 
     if (argc != 3)
+    {
+        printf("An Error Has Occurred");
         return 1;
+    }
 
     /* goal can be sym|ddg|norm */
     goal = argv[1];
@@ -74,19 +77,15 @@ int main(int argc, char *argv[])
     allocate_matrix(&W, n, n);
     get_normalized_similarity_matrix(A, D, &W, n);
 
-    free_matrix(X, n);
-    free_matrix(A, n);
-    free_matrix(D, n);
-
     if (strcmp(goal, "norm") == 0)
     {
         print_matrix(W, n, n);
-        free_matrix(X, n);
-        free_matrix(A, n);
-        free_matrix(D, n);
-        free_matrix(W, n);
-        return 0;
     }
+
+    free_matrix(X, n);
+    free_matrix(A, n);
+    free_matrix(D, n);
+    free_matrix(W, n);
 
     return 0;
 }
@@ -101,7 +100,7 @@ void countRowsAndCols(const char *file_name, int *rows, int *cols)
 
     if (file == NULL)
     {
-        perror("Error opening file");
+        perror("An Error Has Occurred");
         exit(EXIT_FAILURE);
     }
 
@@ -132,7 +131,7 @@ void readCSV(const char *file_name, double **matrix, int rows, int cols)
     FILE *file = fopen(file_name, "r");
     if (file == NULL)
     {
-        perror("Error opening file");
+        perror("An Error Has Occurred");
         exit(EXIT_FAILURE);
     }
 
@@ -142,7 +141,7 @@ void readCSV(const char *file_name, double **matrix, int rows, int cols)
         {
             if (fscanf(file, "%lf,", &matrix[i][j]) != 1)
             {
-                perror("Error reading file");
+                perror("An Error Has Occurred");
                 fclose(file);
                 exit(EXIT_FAILURE);
             }
@@ -355,14 +354,19 @@ void free_matrix(double **mat, int rows)
     int i;
     if (mat == NULL)
     {
-        printf("Matrix is already freed or not allocated\n");
+        printf("An Error Has Occurred");
         return;
     }
     for (i = 0; i < rows; i++)
     {
-        free(mat[i]);
+        if (mat[i] != NULL)
+        {
+            free(mat[i]);
+            mat[i] = NULL;
+        }
     }
     free(mat);
+    mat = NULL;
 }
 
 void print_matrix(double **mat, int n, int d)
