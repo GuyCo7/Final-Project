@@ -12,7 +12,7 @@ GOAL_PARAMS = ['symnmf', 'sym', 'ddg', 'norm']
 def main():
 
     if len(sys.argv) != 4:
-        print("please enter all 3 arguments")
+        print("An Error Has Occurred")
         exit()
 
     np.random.seed(0)
@@ -24,7 +24,7 @@ def main():
 
     # goal can be: (symnmf | sym | ddg | norm)
     goal = sys.argv[2]
-    assert goal in GOAL_PARAMS, "goal is incorrect! can be only: 'symnmf', 'sym', 'ddg', 'norm'"
+    assert goal in GOAL_PARAMS, "An Error Has Occurred"
 
     file_name = sys.argv[3]
     text_file = open(file_name, 'r')
@@ -77,8 +77,7 @@ def convert_to_number(str):
     try:
         return int(str)
     except ValueError:
-        print(str + " is not a whole number!")
-        print("Check your arguments again")
+        print("An Error Has Occurred")
         exit()
 
 
