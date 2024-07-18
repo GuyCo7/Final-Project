@@ -12,7 +12,7 @@ BETA = 0.5
 def main():
 
     np.random.seed(0)
-    
+
     k = convert_to_number(sys.argv[1])
 
     file_name = sys.argv[2]
@@ -23,10 +23,9 @@ def main():
     vectors = raw_text.splitlines()
     data = [vector.split(',') for vector in vectors]
     X = [row[:] for row in data]  # clone data to X
-    for vector_index in range(len(data)):
-        for token_index in range(len(data[vector_index])):
-            X[vector_index][token_index] = float(
-                data[vector_index][token_index])
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            X[i][j] = float(data[i][j])
     N = len(X)
     d = len(X[0])
 
@@ -64,19 +63,6 @@ def convert_to_number(str):
         exit()
 
 
-def print_matrix(mat):
-    rows = len(mat)
-    cols = len(mat[0])
-    for i in range(rows):
-        for j in range(cols):
-            if (j < cols - 1):
-                print("{:.4f}".format(mat[i][j]), end=",")
-            else:
-                print("{:.4f}".format(mat[i][j]), end="")
-
-        print()
-
-
 def kmeans_fit(vectors_arr, n, d, k):
     iter = 1000
     # Step 1: Initialize first k vectors as centroids
@@ -110,13 +96,7 @@ def kmeans_fit(vectors_arr, n, d, k):
 
         iteration += 1
 
-    # Print centroids
-    # for centroid in centroids:
-    #     formatted_centroid = ",".join(["{:.4f}".format(coordination) for coordination in centroid])
-    #     print(formatted_centroid)
     return closest_centroid_for_vector
-
-# Function to find closest centroids for each vector
 
 
 def find_closest_centroids(vectors_arr, centroids):
@@ -127,8 +107,6 @@ def find_closest_centroids(vectors_arr, centroids):
         closest_centroid_for_vector.append(distances.index(min(distances)))
     return closest_centroid_for_vector
 
-# Function to calculate Euclidean distance
-
 
 def euclidean_distance(vector_x, vector_y):
     sum = 0
@@ -136,8 +114,6 @@ def euclidean_distance(vector_x, vector_y):
         sum += (float(vector_x[i]) - float(vector_y[i])) ** 2
 
     return math.sqrt(sum)
-
-# Function to check if any value in the array is bigger than EPSILON
 
 
 def are_bigger_than_epsilon(arr):
