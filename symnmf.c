@@ -38,7 +38,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    /* goal can be sym|ddg|norm */
     goal = argv[1];
     file_name = argv[2];
 
@@ -47,9 +46,6 @@ int main(int argc, char *argv[])
     allocate_matrix(&X, n, d);
 
     readCSV(file_name, X, n, d);
-
-    /* sym: Calculate and output the similarity matrix as described in 1.1 */
-    /* Allocate memory for vectors */
 
     allocate_matrix(&A, n, n);
     get_similarity_matrix(X, A, n, d);
@@ -132,7 +128,7 @@ void readCSV(const char *file_name, double **matrix, int rows, int cols)
     if (file == NULL)
     {
         perror("An Error Has Occurred");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     for (i = 0; i < rows; i++)
@@ -143,7 +139,7 @@ void readCSV(const char *file_name, double **matrix, int rows, int cols)
             {
                 perror("An Error Has Occurred");
                 fclose(file);
-                exit(EXIT_FAILURE);
+                exit(1);
             }
         }
     }
@@ -381,11 +377,8 @@ void print_matrix(double **mat, int n, int d)
             {
                 printf(",");
             }
-            else
-            {
-                printf("\n");
-            }
         }
+        printf("\n");
         fflush(stdout);
     }
 
