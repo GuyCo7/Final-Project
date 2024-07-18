@@ -58,20 +58,18 @@ def convert_to_number(str):
     try:
         return int(str)
     except ValueError:
-        print(str + " is not a whole number!")
-        print("Check your arguments again")
+        print("An Error Has Occurred")
         exit()
 
 
 def kmeans_fit(vectors_arr, n, d, k):
-    iter = 1000
     # Step 1: Initialize first k vectors as centroids
     centroids = [vectors_arr[i] for i in range(k)]
 
     # Steps 2&5: Iterate until all delta centroids are smaller than EPSILON or max iteration is reached
     iteration = 0
     delta_centroids = [1 for _ in range(k)]
-    while are_bigger_than_epsilon(delta_centroids) and iteration < iter:
+    while are_bigger_than_epsilon(delta_centroids) and iteration < MAX_ITER:
 
         # Step 3: Assign every vector to the closest cluster
         closest_centroid_for_vector = find_closest_centroids(

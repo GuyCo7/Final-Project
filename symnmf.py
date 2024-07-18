@@ -3,7 +3,6 @@ import math
 import numpy as np
 import symnmf_capi
 
-MAX_ITER = 300
 EPSILON = 1e-4  # 0.0001
 BETA = 0.5
 GOAL_PARAMS = ['symnmf', 'sym', 'ddg', 'norm']

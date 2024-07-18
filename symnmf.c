@@ -5,6 +5,7 @@
 
 #define BETA 0.5
 #define EPSILON 0.0001
+#define MAX_ITER 300
 
 void get_similarity_matrix(double **X, double **A, int n, int d);
 double squared_euclidean_distance(double *point1, double *point2, int d);
@@ -252,7 +253,7 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
     allocate_matrix(&HTH_H, n, k);
     allocate_matrix(&H_transpose, k, n);
 
-    while (iter <= 300)
+    while (iter <= MAX_ITER)
     {
         double norm;
 
