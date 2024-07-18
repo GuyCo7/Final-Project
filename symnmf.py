@@ -17,12 +17,8 @@ def main():
 
     np.random.seed(0)
 
-    # STEP a:
-
-    # number of required clusters
     k = convert_to_number(sys.argv[1])
 
-    # goal can be: (symnmf | sym | ddg | norm)
     goal = sys.argv[2]
     assert goal in GOAL_PARAMS, "An Error Has Occurred"
 
@@ -33,33 +29,30 @@ def main():
 
     vectors = raw_text.splitlines()
     data = [vector.split(',') for vector in vectors]
-    X = [row[:] for row in data]  # clone data to X
-    for vector_index in range(len(data)):
-        for token_index in range(len(data[vector_index])):
-            X[vector_index][token_index] = float(
-                data[vector_index][token_index])
+    X = [row[:] for row in data]
+    for i in range(len(data)):
+        for j in range(len(data[i])):
+            X[i][j] = float(data[i][j])
     N = len(X)
     d = len(X[0])
 
-    # STEP b:
-    # STEP 1.1 - The Similarity Matrix:
+    assert k < N, "An Error Has Occurred"
+
     A = symnmf_capi.sym(X, N, d)
     if goal == 'sym':
         print_matrix(A)
+        return
 
-    # STEP 1.2 - The diagonal degree Matrix:
     D = symnmf_capi.ddg(A, N)
     if goal == 'ddg':
         print_matrix(D)
+        return
 
-    # STEP 1.3 - The normalized similarity matrix:
     W = symnmf_capi.norm(A, D, N)
     if goal == 'norm':
         print_matrix(W)
+        return
 
-    # STEP 1.4 - Algorithm for optimizing H:
-
-    # STEP 1.4.1 - Initialize H:
     m = np.mean(W)
     H = np.random.uniform(low=0, high=2 * math.sqrt(m / k), size=(N, k))
 
@@ -72,7 +65,8 @@ def main():
     return
 
 
-# Function to convert a string to int
+# Helper Functions:
+
 def convert_to_number(str):
     try:
         return int(str)
@@ -82,16 +76,9 @@ def convert_to_number(str):
 
 
 def print_matrix(mat):
-    rows = len(mat)
-    cols = len(mat[0])
-    for i in range(rows):
-        for j in range(cols):
-            if (j < cols - 1):
-                print("{:.4f}".format(mat[i][j]), end=",")
-            else:
-                print("{:.4f}".format(mat[i][j]), end="")
-
-        print()
+    for row in mat:
+        formatted_row = ",".join("{:.4f}".format(val) for val in row)
+        print(formatted_row)
 
 
 if __name__ == "__main__":
