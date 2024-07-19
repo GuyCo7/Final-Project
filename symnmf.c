@@ -5,6 +5,7 @@
 
 #define BETA 0.5
 #define EPSILON 0.0001
+#define MAX_ITER 300
 
 void get_similarity_matrix(double **X, double **A, int n, int d);
 double squared_euclidean_distance(double *point1, double *point2, int d);
@@ -38,7 +39,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    /* goal can be sym|ddg|norm */
     goal = argv[1];
     file_name = argv[2];
 
@@ -47,9 +47,6 @@ int main(int argc, char *argv[])
     allocate_matrix(&X, n, d);
 
     readCSV(file_name, X, n, d);
-
-    /* sym: Calculate and output the similarity matrix as described in 1.1 */
-    /* Allocate memory for vectors */
 
     allocate_matrix(&A, n, n);
     get_similarity_matrix(X, A, n, d);
@@ -132,7 +129,7 @@ void readCSV(const char *file_name, double **matrix, int rows, int cols)
     if (file == NULL)
     {
         perror("An Error Has Occurred");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
 
     for (i = 0; i < rows; i++)
@@ -143,7 +140,7 @@ void readCSV(const char *file_name, double **matrix, int rows, int cols)
             {
                 perror("An Error Has Occurred");
                 fclose(file);
-                exit(EXIT_FAILURE);
+                exit(1);
             }
         }
     }
@@ -256,7 +253,7 @@ void get_clusters(double **W, double **H, double ***next_H, int n, int k)
     allocate_matrix(&HTH_H, n, k);
     allocate_matrix(&H_transpose, k, n);
 
-    while (iter <= 300)
+    while (iter <= MAX_ITER)
     {
         double norm;
 
@@ -381,11 +378,8 @@ void print_matrix(double **mat, int n, int d)
             {
                 printf(",");
             }
-            else
-            {
-                printf("\n");
-            }
         }
+        printf("\n");
         fflush(stdout);
     }
 

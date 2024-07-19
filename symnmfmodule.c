@@ -21,7 +21,6 @@ static PyObject *sym(PyObject *self, PyObject *args)
     }
 
     allocate_matrix(&X, n, d);
-
     allocate_matrix(&A, n, n);
 
     // convert python floats to c doubles
@@ -72,7 +71,6 @@ static PyObject *ddg(PyObject *self, PyObject *args)
     }
 
     allocate_matrix(&A, n, n);
-
     allocate_matrix(&D, n, n);
 
     // convert python floats to c doubles
@@ -125,9 +123,7 @@ static PyObject *norm(PyObject *self, PyObject *args)
     }
 
     allocate_matrix(&A, n, n);
-
     allocate_matrix(&D, n, n);
-
     allocate_matrix(&W, n, n);
 
     /* convert python floats to c doubles */
@@ -195,15 +191,10 @@ static PyObject *symnmf(PyObject *self, PyObject *args)
     }
 
     allocate_matrix(&X, n, d);
-
     allocate_matrix(&A, n, n);
-
     allocate_matrix(&D, n, n);
-
     allocate_matrix(&W, n, n);
-
     allocate_matrix(&H, n, k);
-
     allocate_matrix(&final_H, n, k);
 
     // convert python floats to c doubles
@@ -231,7 +222,6 @@ static PyObject *symnmf(PyObject *self, PyObject *args)
     get_similarity_matrix(X, A, n, d);
     get_diagonal_degree_matrix(A, D, n);
     get_normalized_similarity_matrix(A, D, &W, n);
-
     get_clusters(W, H, &final_H, n, k);
 
     /* Parse A from c doubles to python floats */
